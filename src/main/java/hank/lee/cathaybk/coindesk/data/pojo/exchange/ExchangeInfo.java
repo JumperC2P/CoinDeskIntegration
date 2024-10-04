@@ -9,6 +9,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
+@JsonDeserialize(as = ExchangeInfo.class)
 public class ExchangeInfo {
     private String code;
     private String symbol;

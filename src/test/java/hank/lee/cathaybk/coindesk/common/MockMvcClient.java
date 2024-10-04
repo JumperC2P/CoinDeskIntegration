@@ -2,8 +2,8 @@ package hank.lee.cathaybk.coindesk.common;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import hank.lee.cathaybk.coindesk.utils.JsonUtils;
+import io.vavr.Tuple2;
 import org.json.JSONObject;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -16,31 +16,37 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MockMvcClient {
-    private MockMvc mockMvc;
+    private final MockMvc mockMvc;
 
     public MockMvcClient(MockMvc mockMvc) {
         this.mockMvc = mockMvc;
     }
 
-    public <T> T doJsonRequest(
-            Map<String, Object> params, String url, HttpMethod httpMethod, TypeReference<T> typeReference) throws Exception {
+    public <T> Tuple2<Integer, T> doJsonRequest(
+            Map<String, String> params, String url, HttpMethod httpMethod, TypeReference<T> typeReference) throws Exception {
         MockHttpServletRequestBuilder requestBuilder = getJsonRequestBuilder(params, url, httpMethod);
-        MvcResult mvcResult = mockMvc.perform(requestBuilder).andReturn();
-        MockHttpServletResponse response = mvcResult.getResponse();
-//        response.getStatus()
-        String responseBodyJson = response.getContentAsString();
-        return JsonUtils.parseToPojo(typeReference, responseBodyJson);
+        return sendRequest(requestBuilder, typeReference);
     }
 
-    public MockHttpServletRequestBuilder getJsonRequestBuilder(
-            Map<String, Object> params, String url, HttpMethod httpMethod) {
+    public <T> Tuple2<Integer, T> doQueryStringRequest(
+            Map<String, String> params, String url, HttpMethod httpMethod, TypeReference<T> typeReference) throws Exception {
+        MockHttpServletRequestBuilder requestBuilder = getQueryStringRequestBuilder(params, url, httpMethod);
+        return sendRequest(requestBuilder, typeReference);
+    }
+
+    private <T> Tuple2<Integer, T> sendRequest(
+            MockHttpServletRequestBuilder requestBuilder, TypeReference<T> typeReference) throws Exception {
+        MvcResult mvcResult = mockMvc.perform(requestBuilder).andReturn();
+        MockHttpServletResponse response = mvcResult.getResponse();
+        String responseBodyJson = response.getContentAsString();
+        return new Tuple2<>(response.getStatus(), JsonUtils.parseToPojo(typeReference, responseBodyJson));
+    }
+
+    private MockHttpServletRequestBuilder getJsonRequestBuilder(
+            Map<String, String> params, String url, HttpMethod httpMethod) {
         JSONObject jsonObject = new JSONObject(params == null ? new HashMap<>() : params);
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36");
         MockHttpServletRequestBuilder rqBuilder;
-        if (httpMethod == HttpMethod.DELETE) {
-            rqBuilder = MockMvcRequestBuilders.delete(url);
-        } else if (httpMethod == HttpMethod.PUT) {
+        if (httpMethod == HttpMethod.PUT) {
             rqBuilder = MockMvcRequestBuilders.put(url);
         } else if (httpMethod == HttpMethod.POST) {
             rqBuilder = MockMvcRequestBuilders.post(url);
@@ -49,7 +55,28 @@ public class MockMvcClient {
         }
         return rqBuilder
                 .content(jsonObject.toString())
-                .headers(httpHeaders)
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .accept(MediaType.APPLICATION_JSON_UTF8);
+    }
+
+    private MockHttpServletRequestBuilder getQueryStringRequestBuilder(
+            Map<String, String> params, String url, HttpMethod httpMethod) {
+        MockHttpServletRequestBuilder rqBuilder;
+        if (!params.isEmpty()) {
+            url += "?";
+            StringBuilder urlBuilder = new StringBuilder(url);
+            for (Map.Entry<String, String> entry : params.entrySet()) {
+                urlBuilder.append(entry.getKey()).append("=").append(entry.getValue()).append("&");
+            }
+            url = urlBuilder.toString();
+            url = url.substring(0, url.length() - 1);
+        }
+        if (httpMethod == HttpMethod.DELETE) {
+            rqBuilder = MockMvcRequestBuilders.delete(url);
+        } else {
+            rqBuilder = MockMvcRequestBuilders.get(url);
+        }
+        return rqBuilder
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaType.APPLICATION_JSON_UTF8);
     }

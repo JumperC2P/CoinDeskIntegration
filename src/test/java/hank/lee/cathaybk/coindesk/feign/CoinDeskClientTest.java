@@ -2,6 +2,7 @@ package hank.lee.cathaybk.coindesk.feign;
 
 import hank.lee.cathaybk.coindesk.TestApplication;
 import hank.lee.cathaybk.coindesk.data.pojo.exchange.CoinDeskResponse;
+import hank.lee.cathaybk.coindesk.data.pojo.exchange.ExchangeInfo;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,7 +24,7 @@ public class CoinDeskClientTest {
         CoinDeskResponse response = coinDeskClient.getBitcoinPriceIndex();
         Assert.assertEquals("Bitcoin", response.getChartName());
 
-        Map<String, CoinDeskResponse.ExchangeInfo> exchangeInfoMap = response.getBpi();
+        Map<String, ExchangeInfo> exchangeInfoMap = response.getBpi();
         Assert.assertNotNull(exchangeInfoMap);
         Assert.assertFalse(exchangeInfoMap.isEmpty());
         Assert.assertNotNull(exchangeInfoMap.get("USD"));
