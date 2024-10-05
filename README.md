@@ -1,7 +1,5 @@
 # CoinDeskIntegration
 
----
-
 ## Introduction
 
 This is a sample script for coin desk integration.
@@ -13,6 +11,7 @@ You can download or fork the postman collection for testing.
 
 [<img src="https://run.pstmn.io/button.svg" alt="Run In Postman" style="width: 128px; height: 32px;">](https://app.getpostman.com/run-collection/3849413-7e6a3428-2a6f-4112-8271-8786b6c2177d?action=collection%2Ffork&source=rip_markdown&collection-url=entityId%3D3849413-7e6a3428-2a6f-4112-8271-8786b6c2177d%26entityType%3Dcollection%26workspaceId%3D687ec9db-07ef-4bb3-abd8-61276e5f7d16)
 
+![image](https://github.com/user-attachments/assets/a653fc82-0a0b-4767-993e-ca6458eb22d9)
 
 ### Currency
 It contains a CURD operation for table currency. The table has 3 records when application starts, which are USD, EUR, GBP. Then you will be able to operate the table via these APIs.
