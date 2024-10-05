@@ -24,8 +24,4 @@ public class Currency {
     private String shortName;
     @Column(name = "zh_tw_name", nullable = false, length = 10)
     private String zhTwName;
-    @Column(name = "latest_rate", precision = 12, scale = 10)
-    private BigDecimal latestRate;
-    @Column(name = "latest_update_time")
-    private LocalDateTime latestUpdateTime;
 }

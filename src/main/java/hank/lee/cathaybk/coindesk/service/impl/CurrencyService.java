@@ -64,6 +64,11 @@ public class CurrencyService implements ICurrencyService {
 
     @Override
     public List<Currency> deleteCurrency(String shortName) {
+        Currency currency = currencyRepository.findById(shortName).orElse(null);
+        if (currency == null) {
+            throw new DemoException(MessageEnum.NO_CURRENCY_FOUND);
+        }
+
         currencyRepository.deleteById(shortName);
         return findAll();
     }

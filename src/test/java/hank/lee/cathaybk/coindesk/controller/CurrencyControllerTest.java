@@ -48,8 +48,12 @@ public class CurrencyControllerTest {
 
     // Sample Data Object
     private static final Map<String, String> newCurrencyParams = new HashMap<>();
+    private static final Map<String, String> duplicatedCurrencyParams = new HashMap<>();
     private static final Map<String, String> updateCurrencyParams = new HashMap<>();
+    private static final Map<String, String> updateFailedCurrencyParams = new HashMap<>();
     private static final Map<String, String> deleteCurrencyParams = new HashMap<>();
+    private static final Map<String, String> deleteFailedCurrencyParams = new HashMap<>();
+
 
     @PostConstruct
     public void init() {
@@ -70,10 +74,18 @@ public class CurrencyControllerTest {
         newCurrencyParams.put("shortName", "NTD");
         newCurrencyParams.put("zhTwName", "台幣");
 
+        duplicatedCurrencyParams.put("name", "US Dollar");
+        duplicatedCurrencyParams.put("shortName", "USD");
+        duplicatedCurrencyParams.put("zhTwName", "美金");
+
         updateCurrencyParams.put("shortName", "USD");
         updateCurrencyParams.put("zhTwName", "美元");
 
+        updateFailedCurrencyParams.put("shortName", "AUD");
+        updateFailedCurrencyParams.put("zhTwName", "澳幣");
+
         deleteCurrencyParams.put("shortName", "EUR");
+        deleteFailedCurrencyParams.put("shortName", "JPY");
     }
 
     @Test
@@ -110,6 +122,16 @@ public class CurrencyControllerTest {
     }
 
     @Test
+    public void testAddCurrencyButDuplicated() throws Exception {
+        Tuple2<Integer, ResponsePayload<String>> response = mockMvcClient.doJsonRequest(duplicatedCurrencyParams, BASE_URL, HttpMethod.POST, new TypeReference<ResponsePayload<String>>() {});
+        Assert.assertEquals(400, response._1.intValue());
+
+        ResponsePayload<String> responsePayload = response._2;
+        Assert.assertNotNull(responsePayload);
+        Assert.assertEquals(MessageEnum.CURRENCY_DUPLICATED.getCode(), responsePayload.getCode());
+    }
+
+    @Test
     @Order(3)
     public void testUpdateCurrency() throws Exception {
         Tuple2<Integer, ResponsePayload<List<Currency>>> response = mockMvcClient.doJsonRequest(updateCurrencyParams, BASE_URL, HttpMethod.PUT, new TypeReference<ResponsePayload<List<Currency>>>() {});
@@ -131,6 +153,16 @@ public class CurrencyControllerTest {
     }
 
     @Test
+    public void testUpdateCurrencyButCurrencyNotFound() throws Exception {
+        Tuple2<Integer, ResponsePayload<String>> response = mockMvcClient.doJsonRequest(updateFailedCurrencyParams, BASE_URL, HttpMethod.PUT, new TypeReference<ResponsePayload<String>>() {});
+        Assert.assertEquals(400, response._1.intValue());
+
+        ResponsePayload<String> responsePayload = response._2;
+        Assert.assertNotNull(responsePayload);
+        Assert.assertEquals(MessageEnum.NO_CURRENCY_FOUND.getCode(), responsePayload.getCode());
+    }
+
+    @Test
     @Order(4)
     public void testDeleteCurrency() throws Exception {
         Tuple2<Integer, ResponsePayload<List<Currency>>> response = mockMvcClient.doQueryStringRequest(deleteCurrencyParams, BASE_URL, HttpMethod.DELETE, new TypeReference<ResponsePayload<List<Currency>>>() {});
@@ -146,6 +178,16 @@ public class CurrencyControllerTest {
         Assert.assertNull(currencies.stream().filter(currency -> currency.getShortName().equals(deleteCurrencyParams.get("shortName"))).findFirst().orElse(null));
 
         Assert.assertFalse(currencyRepository.existsById(deleteCurrencyParams.get("shortName")));
+    }
+
+    @Test
+    public void testDeleteCurrencyButCurrencyNotFound() throws Exception {
+        Tuple2<Integer, ResponsePayload<String>> response = mockMvcClient.doQueryStringRequest(deleteFailedCurrencyParams, BASE_URL, HttpMethod.DELETE, new TypeReference<ResponsePayload<String>>() {});
+        Assert.assertEquals(400, response._1.intValue());
+
+        ResponsePayload<String> responsePayload = response._2;
+        Assert.assertNotNull(responsePayload);
+        Assert.assertEquals(MessageEnum.NO_CURRENCY_FOUND.getCode(), responsePayload.getCode());
     }
 
     private boolean validateCurrencyUpdated(Currency currency) {
