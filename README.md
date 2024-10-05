@@ -54,4 +54,13 @@ For the Currency API (`CurrencyControllerTest.java`), we cover the test for all 
 
 For the Exchange Rate API (`ExchangeRateControllerTest.java`), we cover the test for all the APIs in Exchange Rate. We check whether the response is successful and also test for the negative case, such as the fiat currency is not supported by Coin Desk.
 
+### How to run the project
+
+You can run the project by running the main class `Application.java`.
+Or you can run the project with docker. 
+```shell
+docker-compose up -d
+```
+The application will start at port 8080. You can access the APIs via `http://localhost:8080`.
+
 
