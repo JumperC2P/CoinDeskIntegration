@@ -49,6 +49,7 @@ public class ExchangeControllerTest {
 
     // Sample Data Object
     private static final Map<String, String> getExchangeRateParams = new HashMap<>();
+    private static final Map<String, String> getExchangeRateFailedParams = new HashMap<>();
 
     @PostConstruct
     public void init() {
@@ -64,6 +65,7 @@ public class ExchangeControllerTest {
 
     private void dataInitiation() {
         getExchangeRateParams.put("fiatCurrency", "USD");
+        getExchangeRateFailedParams.put("fiatCurrency", "NTD");
     }
 
     @Test
@@ -98,6 +100,16 @@ public class ExchangeControllerTest {
     }
 
     @Test
+    public void testGetExchangeInfoFromCoinDesckWithCurrencyButNotSupported() throws Exception {
+        Tuple2<Integer, ResponsePayload<String>> response = mockMvcClient.doQueryStringRequest(getExchangeRateFailedParams, COIN_DESK, HttpMethod.GET, new TypeReference<ResponsePayload<String>>() {});
+        Assert.assertEquals(400, response._1.intValue());
+
+        ResponsePayload<String> responsePayload = response._2;
+        Assert.assertNotNull(responsePayload);
+        Assert.assertEquals(MessageEnum.CURRENCY_NOT_SUPPORTED.getCode(), responsePayload.getCode());
+    }
+
+    @Test
     public void testTransformCoinDeskResponse() throws Exception {
         Tuple2<Integer, ResponsePayload<List<CoinDeskTransformResponse>>> response = mockMvcClient.doQueryStringRequest(Collections.emptyMap(), COIN_DESK_TRANSFORM, HttpMethod.GET, new TypeReference<ResponsePayload<List<CoinDeskTransformResponse>>>() {});
         Assert.assertEquals(200, response._1.intValue());
@@ -127,4 +139,13 @@ public class ExchangeControllerTest {
         log.info("Transformed CoinDesk Response with currency({}): {}", getExchangeRateParams.get("fiatCurrency"), JsonUtils.toPrettyString(transformResponses));
     }
 
+    @Test
+    public void testTransformCoinDeskResponseWithCurrencyButNotSupported() throws Exception {
+        Tuple2<Integer, ResponsePayload<String>> response = mockMvcClient.doQueryStringRequest(getExchangeRateFailedParams, COIN_DESK_TRANSFORM, HttpMethod.GET, new TypeReference<ResponsePayload<String>>() {});
+        Assert.assertEquals(400, response._1.intValue());
+
+        ResponsePayload<String> responsePayload = response._2;
+        Assert.assertNotNull(responsePayload);
+        Assert.assertEquals(MessageEnum.CURRENCY_NOT_SUPPORTED.getCode(), responsePayload.getCode());
+    }
 }
