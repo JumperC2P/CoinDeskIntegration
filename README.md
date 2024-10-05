@@ -4,6 +4,7 @@
 
 This is a sample script for coin desk integration.
 It uses a h2 databse in memory as it is just a sample project as well and don't want to store data into a real file for permenant storage.
+Under `src/main/resourses` you can find the `database.sql` file which is used to create table and insert some data into the database when the application starts.
 In the projects, there are 2 sets of APIs: Currency and Exchange Rate. We will explain more below.
 
 ### Postman
